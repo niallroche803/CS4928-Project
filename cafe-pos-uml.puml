@@ -1,0 +1,98 @@
+@startuml CafePOS Class Diagram
+
+package "com.cafepos.common" {
+    class Money {
+        - amount: BigDecimal
+        + {static} of(value: double): Money
+        + {static} zero(): Money
+        + add(other: Money): Money
+        + multiply(qty: int): Money
+        + multiply(qty: double): Money
+        + equals(obj: Object): boolean
+        + hashCode(): int
+        + compareTo(other: Money): int
+        + toString(): String
+    }
+}
+
+package "com.cafepos.catalog" {
+    interface Product {
+        + id(): String
+        + name(): String
+        + basePrice(): Money
+    }
+    
+    class SimpleProduct {
+        - id: String
+        - name: String
+        - basePrice: Money
+        + SimpleProduct(id: String, name: String, basePrice: Money)
+        + id(): String
+        + name(): String
+        + basePrice(): Money
+    }
+    
+    interface Catalog {
+        + add(p: Product): void
+        + findById(id: String): Optional<Product>
+    }
+    
+    class InMemoryCatalog {
+        - byId: HashMap<String, Product>
+        + add(p: Product): void
+        + findById(id: String): Optional<Product>
+    }
+}
+
+package "com.cafepos.domain" {
+    class Order {
+        - id: long
+        - items: ArrayList<LineItem>
+        + Order(id: long)
+        + id(): long
+        + items(): List<LineItem>
+        + addItem(li: LineItem): void
+        + subtotal(): Money
+        + taxAtPercent(percent: int): Money
+        + totalWithTax(percent: int): Money
+    }
+    
+    class LineItem {
+        - product: Product
+        - quantity: int
+        + LineItem(product: Product, quantity: int)
+        + product(): Product
+        + quantity(): int
+        + lineTotal(): Money
+    }
+    
+    class OrderIds {
+        - {static} counter: long
+        + {static} next(): long
+    }
+}
+
+package "com.cafepos.demo" {
+    class Week2Demo {
+        + {static} main(args: String[]): void
+    }
+}
+
+' Relationships
+SimpleProduct ..|> Product
+InMemoryCatalog ..|> Catalog
+InMemoryCatalog --> Product : stores
+Order *-- LineItem : contains
+LineItem --> Product : references
+LineItem --> Money : calculates
+Order --> Money : calculates
+SimpleProduct --> Money : has basePrice
+Money ..|> Comparable
+Week2Demo --> Catalog : uses
+Week2Demo --> InMemoryCatalog : creates
+Week2Demo --> SimpleProduct : creates
+Week2Demo --> Order : creates
+Week2Demo --> LineItem : creates
+Week2Demo --> OrderIds : uses
+
+@enduml
