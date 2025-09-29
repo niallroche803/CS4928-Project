@@ -1,5 +1,6 @@
 package com.cafepos.domain;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -33,8 +34,11 @@ public final class Order {
     }
 
     public Money taxAtPercent(int percent) {
-        if (percent < 0) throw new IllegalArgumentException("tax percent cannot be negative");
-        return subtotal().multiply(percent * 0.01);
+        if (percent < 0) throw new IllegalArgumentException("percent >= 0");
+        BigDecimal tax = subtotal().asBigDecimal()
+                .multiply(BigDecimal.valueOf(percent))
+                .divide(BigDecimal.valueOf(100));
+        return Money.of(tax);
     }
 
     public Money totalWithTax(int percent) {

@@ -13,6 +13,13 @@ public final class Money implements Comparable<Money> {
         return new Money(BigDecimal.valueOf(value));
     }
 
+    public static Money of(BigDecimal value) {
+        if (value == null || value.compareTo(BigDecimal.ZERO) < 0) {
+            throw new IllegalArgumentException("Money amount cannot be null or negative");
+        }
+        return new Money(value);
+    }
+
     public static Money zero() {
         return new Money(BigDecimal.ZERO);
     }
@@ -34,10 +41,8 @@ public final class Money implements Comparable<Money> {
         return new Money(this.amount.multiply(BigDecimal.valueOf(qty))); 
     }
 
-    public Money multiply(double qty) {
-        if (qty < 0)
-            throw new IllegalArgumentException("quantity must be positive");
-        return new Money(this.amount.multiply(BigDecimal.valueOf(qty)));
+    public BigDecimal asBigDecimal() { 
+        return amount; 
     }
 
     @Override
