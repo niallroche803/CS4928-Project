@@ -55,6 +55,7 @@ package "com.cafepos.domain" {
         + subtotal(): Money
         + taxAtPercent(percent: int): Money
         + totalWithTax(percent: int): Money
+        + pay(strategy: PaymentStrategy): void
     }
     
     class LineItem {
@@ -76,6 +77,32 @@ package "com.cafepos.demo" {
     class Week2Demo {
         + {static} main(args: String[]): void
     }
+    
+    class Week3Demo {
+        + {static} main(args: String[]): void
+    }
+}
+
+package "com.cafepos.payment" {
+    interface PaymentStrategy {
+        + pay(order: Order): void
+    }
+    
+    class CashPayment {
+        + pay(order: Order): void
+    }
+    
+    class CardPayment {
+        - cardNumber: String
+        + CardPayment(cardNumber: String)
+        + pay(order: Order): void
+    }
+    
+    class WalletPayment {
+        - walletId: String
+        + WalletPayment(walletId: String)
+        + pay(order: Order): void
+    }
 }
 
 ' Relationships
@@ -88,11 +115,23 @@ LineItem --> Money : calculates
 Order --> Money : calculates
 SimpleProduct --> Money : has basePrice
 Money ..|> Comparable
+Order --> PaymentStrategy : uses
+CashPayment ..|> PaymentStrategy
+CardPayment ..|> PaymentStrategy
+WalletPayment ..|> PaymentStrategy
 Week2Demo --> Catalog : uses
 Week2Demo --> InMemoryCatalog : creates
 Week2Demo --> SimpleProduct : creates
 Week2Demo --> Order : creates
 Week2Demo --> LineItem : creates
 Week2Demo --> OrderIds : uses
+Week3Demo --> Catalog : uses
+Week3Demo --> InMemoryCatalog : creates
+Week3Demo --> SimpleProduct : creates
+Week3Demo --> Order : creates
+Week3Demo --> LineItem : creates
+Week3Demo --> OrderIds : uses
+Week3Demo --> CashPayment : creates
+Week3Demo --> CardPayment : creates
 
 @enduml
