@@ -2,6 +2,8 @@ package com.cafepos.catalog;
 
 import com.cafepos.common.Money;
 
+import java.util.Objects;
+
 public final class SimpleProduct implements Product {
     private final String id;
     private final String name;
@@ -37,4 +39,15 @@ public final class SimpleProduct implements Product {
     public Money basePrice() {
         return basePrice;
     }
+
+    @Override
+    public String toString() { return name + " (€" + basePrice + ")"; }
+
+    @Override public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof SimpleProduct p)) return false;
+        return id.equals(p.id);
+    }
+
+    @Override public int hashCode() { return Objects.hash(id); }
 }
