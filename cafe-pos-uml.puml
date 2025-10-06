@@ -48,6 +48,7 @@ package "com.cafepos.domain" {
     class Order {
         - id: long
         - items: ArrayList<LineItem>
+        - observers: ArrayList<OrderObserver>
         + Order(id: long)
         + id(): long
         + items(): List<LineItem>
@@ -56,6 +57,12 @@ package "com.cafepos.domain" {
         + taxAtPercent(percent: int): Money
         + totalWithTax(percent: int): Money
         + pay(strategy: PaymentStrategy): void
+        + register(o: OrderObserver): void
+        + unregister(o: OrderObserver): void
+        + notifyObservers(order: Order, eventType: String): void
+        + markReady(): void
+        + markItemAdded(): void
+        + markPaid(): void
     }
     
     class LineItem {
@@ -74,11 +81,15 @@ package "com.cafepos.domain" {
 }
 
 package "com.cafepos.demo" {
-    class Week2Demo {
-        + {static} main(args: String[]): void
-    }
+    'class Week2Demo {
+    '    + {static} main(args: String[]): void
+    '}
     
-    class Week3Demo {
+    'class Week3Demo {
+    '    + {static} main(args: String[]): void
+    '}
+    
+    class Week4Demo {
         + {static} main(args: String[]): void
     }
 }
@@ -105,6 +116,30 @@ package "com.cafepos.payment" {
     }
 }
 
+package "com.cafepos.observers" {
+    interface OrderObserver {
+        + updated(order: Order, eventType: String): void
+    }
+    
+    interface OrderPublisher {
+        + register(o: OrderObserver): void
+        + unregister(o: OrderObserver): void
+        + notifyObservers(order: Order, eventType: String): void
+    }
+    
+    class KitchenDisplay {
+        + updated(order: Order, eventType: String): void
+    }
+    
+    class DeliveryDesk {
+        + updated(order: Order, eventType: String): void
+    }
+    
+    class CustomerNotifier {
+        + updated(order: Order, eventType: String): void
+    }
+}
+
 ' Relationships
 SimpleProduct ..|> Product
 InMemoryCatalog ..|> Catalog
@@ -116,22 +151,38 @@ Order --> Money : calculates
 SimpleProduct --> Money : has basePrice
 Money ..|> Comparable
 Order --> PaymentStrategy : uses
+Order ..|> OrderPublisher
+Order --> OrderObserver : notifies
 CashPayment ..|> PaymentStrategy
 CardPayment ..|> PaymentStrategy
 WalletPayment ..|> PaymentStrategy
-Week2Demo --> Catalog : uses
-Week2Demo --> InMemoryCatalog : creates
-Week2Demo --> SimpleProduct : creates
-Week2Demo --> Order : creates
-Week2Demo --> LineItem : creates
-Week2Demo --> OrderIds : uses
-Week3Demo --> Catalog : uses
-Week3Demo --> InMemoryCatalog : creates
-Week3Demo --> SimpleProduct : creates
-Week3Demo --> Order : creates
-Week3Demo --> LineItem : creates
-Week3Demo --> OrderIds : uses
-Week3Demo --> CashPayment : creates
-Week3Demo --> CardPayment : creates
+KitchenDisplay ..|> OrderObserver
+DeliveryDesk ..|> OrderObserver
+CustomerNotifier ..|> OrderObserver
+'Week2Demo --> Catalog : uses
+'Week2Demo --> InMemoryCatalog : creates
+'Week2Demo --> SimpleProduct : creates
+'Week2Demo --> Order : creates
+'Week2Demo --> LineItem : creates
+'Week2Demo --> OrderIds : uses
+'Week3Demo --> Catalog : uses
+'Week3Demo --> InMemoryCatalog : creates
+'Week3Demo --> SimpleProduct : creates
+'Week3Demo --> Order : creates
+'Week3Demo --> LineItem : creates
+'Week3Demo --> OrderIds : uses
+'Week3Demo --> CashPayment : creates
+'Week3Demo --> CardPayment : creates
+'Week3Demo --> WalletPayment : creates
+Week4Demo --> Catalog : uses
+Week4Demo --> InMemoryCatalog : creates
+Week4Demo --> SimpleProduct : creates
+Week4Demo --> Order : creates
+Week4Demo --> LineItem : creates
+Week4Demo --> OrderIds : uses
+Week4Demo --> KitchenDisplay : creates
+Week4Demo --> DeliveryDesk : creates
+Week4Demo --> CustomerNotifier : creates
+Week4Demo --> CashPayment : creates
 
 @enduml
