@@ -5,11 +5,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.cafepos.common.Money;
+import com.cafepos.observers.OrderObserver;
+import com.cafepos.observers.OrderPublisher;
 import com.cafepos.payment.PaymentStrategy;
 
-public final class Order {
+public final class Order implements OrderPublisher {
     private final long id;
     private final List<LineItem> items = new ArrayList<>();
+    private final List<OrderObserver> observers = new ArrayList<>();
+
 
     public Order(long id) {
         this.id = id;
@@ -49,5 +53,35 @@ public final class Order {
     if (strategy == null) 
         throw new IllegalArgumentException("strategy required"); 
     strategy.pay(this);
+    }
+
+    @Override
+    public void register(OrderObserver o) {
+        if (o != null && !observers.contains(o)) {
+            observers.add(o);
+        }
+    }
+
+    @Override
+    public void unregister(OrderObserver o) {
+        observers.remove(o);
+    }
+
+    @Override
+    public void notifyObservers(Order order, String eventType) {
+        for (OrderObserver observer : observers) {
+            observer.updated(order, eventType);
+        }
+    }
+    public void markReady() {
+        notifyObservers(this, "ready");
+    }
+
+    public void markItemAdded() {
+        notifyObservers(this, "itemAdded");
+    }
+
+    public void markPaid() {
+        notifyObservers(this, "paid");
     }
 }
