@@ -1,10 +1,9 @@
 package com.cafepos;
 
-import com.cafepos.catalog.SimpleProduct;
-import com.cafepos.common.Money;
-import com.cafepos.domain.LineItem;
-import com.cafepos.domain.Order;
-import com.cafepos.payment.PaymentStrategy;
+import com.cafepos.catalog.*;
+import com.cafepos.common.*;
+import com.cafepos.domain.*;
+import com.cafepos.payment.*;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -67,5 +66,19 @@ public class OrderTest {
         PaymentStrategy fake = o -> called[0] = true;
         order.pay(fake);
         assertTrue(called[0], "Payment strategy should be called");
+    }
+    
+    @Test
+    void order_mark_methods_do_not_throw() {
+        var order = new Order(1);
+        assertDoesNotThrow(() -> order.markItemAdded());
+        assertDoesNotThrow(() -> order.markPaid());
+        assertDoesNotThrow(() -> order.markReady());
+    }
+    
+    @Test
+    void order_id_is_preserved() {
+        var order = new Order(123);
+        assertEquals(123, order.id());
     }
 }
