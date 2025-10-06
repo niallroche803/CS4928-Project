@@ -5,7 +5,9 @@ import com.cafepos.domain.Order;
 public final class WalletPayment implements PaymentStrategy { 
     private final String walletId; 
     
-    public WalletPayment(String walletId) { 
+    public WalletPayment(String walletId) {
+        if (walletId == null || walletId.isBlank())
+            throw new IllegalArgumentException("walletId required");
         this.walletId = walletId; 
     }
 
