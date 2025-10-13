@@ -89,7 +89,11 @@ package "com.cafepos.demo" {
     '    + {static} main(args: String[]): void
     '}
     
-    class Week4Demo {
+    'class Week4Demo {
+    '    + {static} main(args: String[]): void
+    '}
+    
+    class Week5Demo {
         + {static} main(args: String[]): void
     }
 }
@@ -140,6 +144,53 @@ package "com.cafepos.observers" {
     }
 }
 
+package "com.cafepos.decorator" {
+    interface Priced {
+        + price(): Money
+    }
+    
+    abstract class ProductDecorator {
+        # base: Product
+        + ProductDecorator(base: Product)
+        + id(): String
+        + basePrice(): Money
+    }
+    
+    class ExtraShot {
+        - {static} SURCHARGE: Money
+        + ExtraShot(base: Product)
+        + name(): String
+        + price(): Money
+    }
+    
+    class OatMilk {
+        - {static} SURCHARGE: Money
+        + OatMilk(base: Product)
+        + name(): String
+        + price(): Money
+    }
+    
+    class SizeLarge {
+        - {static} SURCHARGE: Money
+        + SizeLarge(base: Product)
+        + name(): String
+        + price(): Money
+    }
+    
+    class Syrup {
+        - {static} SURCHARGE: Money
+        + Syrup(base: Product)
+        + name(): String
+        + price(): Money
+    }
+}
+
+package "com.cafepos.factory" {
+    class ProductFactory {
+        + create(recipe: String): Product
+    }
+}
+
 ' Relationships
 SimpleProduct ..|> Product
 InMemoryCatalog ..|> Catalog
@@ -174,15 +225,36 @@ CustomerNotifier ..|> OrderObserver
 'Week3Demo --> CashPayment : creates
 'Week3Demo --> CardPayment : creates
 'Week3Demo --> WalletPayment : creates
-Week4Demo --> Catalog : uses
-Week4Demo --> InMemoryCatalog : creates
-Week4Demo --> SimpleProduct : creates
-Week4Demo --> Order : creates
-Week4Demo --> LineItem : creates
-Week4Demo --> OrderIds : uses
-Week4Demo --> KitchenDisplay : creates
-Week4Demo --> DeliveryDesk : creates
-Week4Demo --> CustomerNotifier : creates
-Week4Demo --> CashPayment : creates
+'Week4Demo --> Catalog : uses
+'Week4Demo --> InMemoryCatalog : creates
+'Week4Demo --> SimpleProduct : creates
+'Week4Demo --> Order : creates
+'Week4Demo --> LineItem : creates
+'Week4Demo --> OrderIds : uses
+'Week4Demo --> KitchenDisplay : creates
+'Week4Demo --> DeliveryDesk : creates
+'Week4Demo --> CustomerNotifier : creates
+'Week4Demo --> CashPayment : creates
+Week5Demo --> ProductFactory : uses
+Week5Demo --> Order : creates
+Week5Demo --> LineItem : creates
+Week5Demo --> OrderIds : uses
+ProductDecorator ..|> Product
+ProductDecorator ..|> Priced
+ProductDecorator --> Product : decorates
+ExtraShot --|> ProductDecorator
+OatMilk --|> ProductDecorator
+SizeLarge --|> ProductDecorator
+Syrup --|> ProductDecorator
+ExtraShot --> Money : uses
+OatMilk --> Money : uses
+SizeLarge --> Money : uses
+Syrup --> Money : uses
+ProductFactory --> Product : creates
+ProductFactory --> SimpleProduct : creates
+ProductFactory --> ExtraShot : creates
+ProductFactory --> OatMilk : creates
+ProductFactory --> SizeLarge : creates
+ProductFactory --> Syrup : creates
 
 @enduml
