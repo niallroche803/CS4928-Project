@@ -1,5 +1,9 @@
 @startuml CafePOS Class Diagram
-
+skinparam pageMargin 10
+skinparam pageWidth 1200
+skinparam pageHeight 800
+scale 0.75
+left to right direction
 package "com.cafepos.common" {
     class Money {
         - amount: BigDecimal
