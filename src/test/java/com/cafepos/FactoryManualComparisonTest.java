@@ -5,6 +5,7 @@ import com.cafepos.common.*;
 import com.cafepos.decorator.*;
 import com.cafepos.domain.*;
 import com.cafepos.factory.*;
+import com.cafepos.pricing.*;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -29,6 +30,7 @@ public class FactoryManualComparisonTest {
         
         assertEquals(order1.subtotal(), order2.subtotal());
         
-        assertEquals(order1.totalWithTax(10), order2.totalWithTax(10));
+        var taxPolicy = new FixedRateTaxPolicy(10);
+        assertEquals(order1.totalWithTax(taxPolicy), order2.totalWithTax(taxPolicy));
     }
 }

@@ -1,6 +1,7 @@
 package com.cafepos.payment;
 
 import com.cafepos.domain.Order;
+import com.cafepos.pricing.FixedRateTaxPolicy;
 
 public final class WalletPayment implements PaymentStrategy { 
     private final String walletId; 
@@ -13,6 +14,6 @@ public final class WalletPayment implements PaymentStrategy {
 
     @Override 
     public void pay(Order order) { 
-        System.out.println("[Wallet] Customer paid " + order.totalWithTax(10) + " EUR via wallet " + walletId);
+        System.out.println("[Wallet] Customer paid " + order.totalWithTax(new FixedRateTaxPolicy(10)) + " EUR via wallet " + walletId);
     } 
 }

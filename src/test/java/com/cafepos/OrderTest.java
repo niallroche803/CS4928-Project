@@ -4,6 +4,7 @@ import com.cafepos.catalog.*;
 import com.cafepos.common.*;
 import com.cafepos.domain.*;
 import com.cafepos.payment.*;
+import com.cafepos.pricing.*;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -18,17 +19,19 @@ public class OrderTest {
         o.addItem(new LineItem(p1, 2));
         o.addItem(new LineItem(p2, 1));
         
+        var taxPolicy = new FixedRateTaxPolicy(10);
         assertEquals(Money.of(8.50), o.subtotal());
-        assertEquals(Money.of(0.85), o.taxAtPercent(10));
-        assertEquals(Money.of(9.35), o.totalWithTax(10));
+        assertEquals(Money.of(0.85), o.tax(taxPolicy));
+        assertEquals(Money.of(9.35), o.totalWithTax(taxPolicy));
     }
     
     @Test
     void empty_order_totals() {
         Order order = new Order(1);
+        var taxPolicy = new FixedRateTaxPolicy(10);
         assertEquals(Money.zero(), order.subtotal());
-        assertEquals(Money.zero(), order.taxAtPercent(10));
-        assertEquals(Money.zero(), order.totalWithTax(10));
+        assertEquals(Money.zero(), order.tax(taxPolicy));
+        assertEquals(Money.zero(), order.totalWithTax(taxPolicy));
     }
     
     @Test
@@ -37,9 +40,10 @@ public class OrderTest {
         var order = new Order(1);
         order.addItem(new LineItem(product, 1));
         
+        var taxPolicy = new FixedRateTaxPolicy(10);
         assertEquals(Money.of(5.00), order.subtotal());
-        assertEquals(Money.of(0.50), order.taxAtPercent(10));
-        assertEquals(Money.of(5.50), order.totalWithTax(10));
+        assertEquals(Money.of(0.50), order.tax(taxPolicy));
+        assertEquals(Money.of(5.50), order.totalWithTax(taxPolicy));
     }
     
     @Test

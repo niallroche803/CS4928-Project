@@ -7,7 +7,7 @@ import com.cafepos.pricing.*;
 
 public class OrderManagerGod { //God Class - too many responsibilities
 
-    public static int TAX_PERCENT = 10; //Primitive Obsession - TAX_PERCENT as int instead of a dedicated type; Global/Static state - introduces shared mutable state.
+    private static final TaxPolicy TAX_POLICY = new FixedRateTaxPolicy(10);
     public static String LAST_DISCOUNT_CODE = null; //Global/Static state - introduces shared mutable state.
 
 
@@ -30,7 +30,7 @@ public class OrderManagerGod { //God Class - too many responsibilities
         }
         Money discounted = Money.of(subtotal.asBigDecimal().subtract(discount.asBigDecimal())); //Duplicated Logic - Money calculations scattered inline
         if (discounted.asBigDecimal().signum() < 0) discounted = Money.zero(); //Duplicated Logic - validation logic inline
-        var tax = Money.of(discounted.asBigDecimal().multiply(java.math.BigDecimal.valueOf(TAX_PERCENT)).divide(java.math.BigDecimal.valueOf(100))); //Primitive Obsession - magic number for tax; Duplicated Logic - tax calculation inline
+        Money tax = TAX_POLICY.taxOn(discounted);
         var total = discounted.add(tax);
         if (paymentType != null) {
             if (paymentType.equalsIgnoreCase("CASH")) { //Shotgun Surgery risk - payment logic hardcoded
@@ -49,7 +49,7 @@ public class OrderManagerGod { //God Class - too many responsibilities
         if (discount.asBigDecimal().signum() > 0) {
             receipt.append("Discount: -").append(discount).append("\n");
         }
-        receipt.append("Tax (").append(TAX_PERCENT).append("%): ").append(tax).append("\n");
+        receipt.append("Tax (").append(((FixedRateTaxPolicy)TAX_POLICY).getPercent()).append("%): ").append(tax).append("\n");
         receipt.append("Total: ").append(total);
         String out = receipt.toString();
         if (printReceipt) {

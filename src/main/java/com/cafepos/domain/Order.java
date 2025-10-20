@@ -1,6 +1,5 @@
 package com.cafepos.domain;
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -8,6 +7,8 @@ import com.cafepos.common.Money;
 import com.cafepos.observers.OrderObserver;
 import com.cafepos.observers.OrderPublisher;
 import com.cafepos.payment.PaymentStrategy;
+import com.cafepos.pricing.TaxPolicy;
+import com.cafepos.pricing.FixedRateTaxPolicy;
 
 public final class Order implements OrderPublisher {
     private final long id;
@@ -37,16 +38,12 @@ public final class Order implements OrderPublisher {
         return items.stream().map(LineItem::lineTotal).reduce(Money.zero(), Money::add);
     }
 
-    public Money taxAtPercent(int percent) {
-        if (percent < 0) throw new IllegalArgumentException("percent >= 0");
-        BigDecimal tax = subtotal().asBigDecimal()
-                .multiply(BigDecimal.valueOf(percent))
-                .divide(BigDecimal.valueOf(100));
-        return Money.of(tax);
+    public Money tax(TaxPolicy policy) {
+        return policy.taxOn(subtotal());
     }
 
-    public Money totalWithTax(int percent) {
-        return subtotal().add(taxAtPercent(percent));
+    public Money totalWithTax(TaxPolicy policy) {
+        return subtotal().add(tax(policy));
     }
 
     public void pay(PaymentStrategy strategy) { 

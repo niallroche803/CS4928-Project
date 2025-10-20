@@ -1,6 +1,7 @@
 package com.cafepos.pricing;
 
 import com.cafepos.common.Money;
+import java.math.BigDecimal;
 
 public final class FixedRateTaxPolicy implements TaxPolicy {
     private final int percent;
@@ -9,8 +10,10 @@ public final class FixedRateTaxPolicy implements TaxPolicy {
         this.percent = percent;
     }
     @Override public Money taxOn(Money amount) {
-        var t = amount.asBigDecimal().multiply(java.math.BigDecimal.valueOf(percent)).divide(java.math.BigDecimal.valueOf(100));
-        return Money.of(t);
+        BigDecimal taxAmount = amount.asBigDecimal()
+            .multiply(BigDecimal.valueOf(percent))
+            .divide(BigDecimal.valueOf(100));
+        return Money.of(taxAmount);
     }
 
     public int getPercent() {
