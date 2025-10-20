@@ -4,6 +4,8 @@ import com.cafepos.common.Money;
 import com.cafepos.factory.*;
 import com.cafepos.catalog.Product;
 import com.cafepos.pricing.*;
+import com.cafepos.payment.*;
+import com.cafepos.domain.*;
 
 public class OrderManagerGod { //God Class - too many responsibilities
 
@@ -11,7 +13,7 @@ public class OrderManagerGod { //God Class - too many responsibilities
     public static String LAST_DISCOUNT_CODE = null; //Global/Static state - introduces shared mutable state.
 
 
-    public static String process(String recipe, int qty, String paymentType, String discountCode, boolean printReceipt) { //Long Method - violates SRP by performing creation, pricing, discounting, tax, payment I/O, and printing.
+    public static String process(String recipe, int qty, String paymentType, String paymentDetails, String discountCode, boolean printReceipt) { //Long Method - violates SRP by performing creation, pricing, discounting, tax, payment I/O, and printing.
         ProductFactory factory = new ProductFactory();
         Product product = factory.create(recipe);
         Money unitPrice;
@@ -33,15 +35,10 @@ public class OrderManagerGod { //God Class - too many responsibilities
         Money tax = TAX_POLICY.taxOn(discounted);
         var total = discounted.add(tax);
         if (paymentType != null) {
-            if (paymentType.equalsIgnoreCase("CASH")) { //Shotgun Surgery risk - payment logic hardcoded
-                System.out.println("[Cash] Customer paid " + total + " EUR");
-            } else if (paymentType.equalsIgnoreCase("CARD")) { //Shotgun Surgery risk - payment logic hardcoded
-                System.out.println("[Card] Customer paid " + total + " EUR with card ****1234");
-            } else if (paymentType.equalsIgnoreCase("WALLET")) { //Shotgun Surgery risk - payment logic hardcoded
-                System.out.println("[Wallet] Customer paid " + total + " EUR via wallet user-wallet-789");
-            } else {
-                System.out.println("[UnknownPayment] " + total);
-            }
+            PaymentStrategy paymentStrategy = PaymentStrategyFactory.create(paymentType, paymentDetails);
+            Order order = new Order(1);
+            order.addItem(new LineItem(product, qty));
+            paymentStrategy.pay(order);
         }
         ReceiptPrinter printer = new ReceiptPrinter();
         PricingService.PricingResult pricingResult = new PricingService.PricingResult(subtotal, discount, tax, total);
