@@ -97,7 +97,11 @@ package "com.cafepos.demo" {
     '    + {static} main(args: String[]): void
     '}
     
-    class Week5Demo {
+    'class Week5Demo {
+    '    + {static} main(args: String[]): void
+    '}
+    
+    class Week6Demo {
         + {static} main(args: String[]): void
     }
 }
@@ -193,6 +197,89 @@ package "com.cafepos.factory" {
     class ProductFactory {
         + create(recipe: String): Product
     }
+    
+    class DiscountPolicyFactory {
+        + create(type: String): DiscountPolicy
+    }
+    
+    class PaymentStrategyFactory {
+        + create(type: String): PaymentStrategy
+    }
+}
+
+package "com.cafepos.pricing" {
+    interface DiscountPolicy {
+        + discountOf(subtotal: Money): Money
+    }
+    
+    interface TaxPolicy {
+        + taxOn(amount: Money): Money
+    }
+    
+    class PricingService {
+        - discountPolicy: DiscountPolicy
+        - taxPolicy: TaxPolicy
+        + PricingService(discountPolicy: DiscountPolicy, taxPolicy: TaxPolicy)
+        + price(subtotal: Money): PricingResult
+    }
+    
+    class "PricingService.PricingResult" as PricingResult {
+        + subtotal: Money
+        + discount: Money
+        + tax: Money
+        + total: Money
+    }
+    
+    class LoyaltyPercentDiscount {
+        - percent: int
+        + LoyaltyPercentDiscount(percent: int)
+        + discountOf(subtotal: Money): Money
+    }
+    
+    class FixedCouponDiscount {
+        - amount: Money
+        + FixedCouponDiscount(amount: Money)
+        + discountOf(subtotal: Money): Money
+    }
+    
+    class NoDiscount {
+        + discountOf(subtotal: Money): Money
+    }
+    
+    class FixedRateTaxPolicy {
+        - percent: int
+        + FixedRateTaxPolicy(percent: int)
+        + taxOn(amount: Money): Money
+        + getPercent(): int
+    }
+    
+    class ReceiptPrinter {
+        + format(recipe: String, qty: int, pr: PricingResult, taxPercent: int): String
+        + print(receipt: String): void
+    }
+}
+
+package "com.cafepos.checkout" {
+    class CheckoutService {
+        - factory: ProductFactory
+        - pricing: PricingService
+        - printer: ReceiptPrinter
+        - taxPercent: int
+        + CheckoutService(factory: ProductFactory, pricing: PricingService, printer: ReceiptPrinter, taxPercent: int)
+        + checkout(recipe: String, qty: int, paymentStrategy: PaymentStrategy): String
+    }
+}
+
+package "com.cafepos.smells" {
+    class OrderManagerGod {
+        - factory: ProductFactory
+        - discountPolicy: DiscountPolicy
+        - taxPolicy: TaxPolicy
+        - printer: ReceiptPrinter
+        - paymentStrategy: PaymentStrategy
+        + OrderManagerGod(factory: ProductFactory, discountPolicy: DiscountPolicy, taxPolicy: TaxPolicy, printer: ReceiptPrinter, paymentStrategy: PaymentStrategy)
+        + process(recipe: String, qty: int, paymentType: String, paymentDetails: String, discountCode: String, printReceipt: boolean): String
+    }
 }
 
 ' Relationships
@@ -239,10 +326,15 @@ CustomerNotifier ..|> OrderObserver
 'Week4Demo --> DeliveryDesk : creates
 'Week4Demo --> CustomerNotifier : creates
 'Week4Demo --> CashPayment : creates
-Week5Demo --> ProductFactory : uses
-Week5Demo --> Order : creates
-Week5Demo --> LineItem : creates
-Week5Demo --> OrderIds : uses
+'Week5Demo --> ProductFactory : uses
+'Week5Demo --> Order : creates
+'Week5Demo --> LineItem : creates
+'Week5Demo --> OrderIds : uses
+Week6Demo --> CheckoutService : uses
+Week6Demo --> PricingService : uses
+Week6Demo --> ProductFactory : uses
+Week6Demo --> OrderManagerGod : uses
+Week6Demo --> PaymentStrategy : uses
 ProductDecorator ..|> Product
 ProductDecorator ..|> Priced
 ProductDecorator --> Product : decorates
@@ -260,5 +352,29 @@ ProductFactory --> ExtraShot : creates
 ProductFactory --> OatMilk : creates
 ProductFactory --> SizeLarge : creates
 ProductFactory --> Syrup : creates
+DiscountPolicyFactory --> DiscountPolicy : creates
+PaymentStrategyFactory --> PaymentStrategy : creates
+PricingService --> DiscountPolicy : uses
+PricingService --> TaxPolicy : uses
+PricingService --> PricingResult : creates
+LoyaltyPercentDiscount ..|> DiscountPolicy
+FixedCouponDiscount ..|> DiscountPolicy
+NoDiscount ..|> DiscountPolicy
+FixedRateTaxPolicy ..|> TaxPolicy
+ReceiptPrinter --> PricingResult : uses
+CheckoutService --> ProductFactory : uses
+CheckoutService --> PricingService : uses
+CheckoutService --> ReceiptPrinter : uses
+CheckoutService --> PaymentStrategy : uses
+CheckoutService --> Order : creates
+CheckoutService --> LineItem : creates
+OrderManagerGod --> ProductFactory : uses
+OrderManagerGod --> DiscountPolicy : uses
+OrderManagerGod --> TaxPolicy : uses
+OrderManagerGod --> ReceiptPrinter : uses
+OrderManagerGod --> PaymentStrategy : uses
+OrderManagerGod --> Order : creates
+OrderManagerGod --> LineItem : creates
+OrderManagerGod --> PricingResult : creates
 
 @enduml
