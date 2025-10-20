@@ -43,17 +43,11 @@ public class OrderManagerGod { //God Class - too many responsibilities
                 System.out.println("[UnknownPayment] " + total);
             }
         }
-        StringBuilder receipt = new StringBuilder();
-        receipt.append("Order (").append(recipe).append(") x").append(qty).append("\n");
-                receipt.append("Subtotal: ").append(subtotal).append("\n");
-        if (discount.asBigDecimal().signum() > 0) {
-            receipt.append("Discount: -").append(discount).append("\n");
-        }
-        receipt.append("Tax (").append(((FixedRateTaxPolicy)TAX_POLICY).getPercent()).append("%): ").append(tax).append("\n");
-        receipt.append("Total: ").append(total);
-        String out = receipt.toString();
+        ReceiptPrinter printer = new ReceiptPrinter();
+        PricingService.PricingResult pricingResult = new PricingService.PricingResult(subtotal, discount, tax, total);
+        String out = printer.format(recipe, qty, pricingResult, ((FixedRateTaxPolicy)TAX_POLICY).getPercent());
         if (printReceipt) {
-            System.out.println(out);
+            printer.print(out);
         }
         return out;
     }

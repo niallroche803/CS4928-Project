@@ -12,4 +12,8 @@ public final class ReceiptPrinter {
         receipt.append("Total: ").append(pr.total());
         return receipt.toString();
     }
+
+    public void print(String receipt) {
+        System.out.println(receipt);
+    }
 }
