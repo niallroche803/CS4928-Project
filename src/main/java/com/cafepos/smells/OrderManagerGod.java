@@ -1,8 +1,9 @@
 package com.cafepos.smells;
 
 import com.cafepos.common.Money;
-import com.cafepos.factory.ProductFactory;
+import com.cafepos.factory.*;
 import com.cafepos.catalog.Product;
+import com.cafepos.pricing.*;
 
 public class OrderManagerGod { //God Class - too many responsibilities
 
@@ -22,17 +23,9 @@ public class OrderManagerGod { //God Class - too many responsibilities
         }
         if (qty <= 0) qty = 1;
         Money subtotal = unitPrice.multiply(qty);
-        Money discount = Money.zero();
-        if (discountCode != null) { //Primitive Obsession - using strings for discountCode instead of a dedicated type
-            if (discountCode.equalsIgnoreCase("LOYAL5")) { //Shotgun Surgery risk - discount logic hardcoded
-                discount = Money.of(subtotal.asBigDecimal().multiply(java.math.BigDecimal.valueOf(5)).divide(java.math.BigDecimal.valueOf(100))); //Duplicated Logic - complex BigDecimal math inline
-            } else if (discountCode.equalsIgnoreCase("COUPON1")) { //Shotgun Surgery risk - discount logic hardcoded
-                discount = Money.of(1.00);
-            } else if (discountCode.equalsIgnoreCase("NONE")) {
-                discount = Money.zero();
-            } else {
-                discount = Money.zero();
-            }
+        DiscountPolicy discountPolicy = DiscountPolicyFactory.create(discountCode);
+        Money discount = discountPolicy.discountOf(subtotal);
+        if (discountCode != null) {
             LAST_DISCOUNT_CODE = discountCode; //Global/Static state - mutable global state
         }
         Money discounted = Money.of(subtotal.asBigDecimal().subtract(discount.asBigDecimal())); //Duplicated Logic - Money calculations scattered inline
