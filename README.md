@@ -174,3 +174,13 @@ For application developers, the Factory pattern approach should be exposed rathe
 ## Contributing
 
 This project is part of CS4928 - Theory and Practice of Software Design coursework. It is not open to contribution.
+
+## Design Notes
+
+**Code Smells Removed**: Eliminated Long Parameter Lists in product constructors by implementing Factory pattern; removed Duplicate Code across payment methods through Strategy pattern; addressed Feature Envy in order calculations by encapsulating tax logic within Order class.
+
+**Refactorings Applied**: Extract Method for tax calculations; Replace Constructor with Factory Method for product creation; Replace Conditional with Polymorphism for payment processing; Introduce Parameter Object for Money handling.
+
+**SOLID Principles**: Single Responsibility - each class has one reason to change (Product, Order, Payment strategies); Open/Closed - system open for extension via decorators and strategies, closed for modification; Liskov Substitution - all payment strategies and decorators are interchangeable; Interface Segregation - focused interfaces (PaymentStrategy, OrderObserver); Dependency Inversion - depends on abstractions, not concrete implementations.
+
+**Adding New Discount Types**: Create new discount decorator classes implementing ProductDecorator interface, add discount parsing logic to ProductFactory, and register discount codes in recipe format - no existing classes require modification due to Open/Closed principle compliance.
