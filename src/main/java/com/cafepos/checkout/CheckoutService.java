@@ -38,6 +38,14 @@ public final class CheckoutService {
         // If your strategy prints based on totals, wrap in a tiny adapter and call after pricing.
         paymentStrategy.pay(order);
         
+        if (paymentStrategy instanceof com.cafepos.payment.CashPayment cashPayment && 
+            cashPayment.getCashAmount() != null) {
+            Money change = com.cafepos.common.Money.of(
+                cashPayment.getCashAmount().asBigDecimal().subtract(result.total().asBigDecimal()));
+            return printer.formatWithChange(recipe, qty, result, taxPercent, 
+                cashPayment.getCashAmount(), change);
+        }
+        
         return printer.format(recipe, qty, result, taxPercent);
     }
 }
