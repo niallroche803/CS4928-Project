@@ -1,21 +1,27 @@
 @startuml CafePOS Class Diagram
 skinparam pageMargin 10
-skinparam pageWidth 1200
-skinparam pageHeight 800
-scale 0.75
+skinparam pageWidth 1400
+skinparam pageHeight 1000
+scale 0.8
 left to right direction
+skinparam class {
+    BackgroundColor White
+    BorderColor Black
+    ArrowColor Black
+}
+skinparam package {
+    BackgroundColor LightGray
+    BorderColor Black
+}
+hide empty members
 package "com.cafepos.common" {
     class Money {
         - amount: BigDecimal
-        + {static} of(value: double): Money
+        + {static} of(double): Money
         + {static} zero(): Money
-        + add(other: Money): Money
-        + multiply(qty: int): Money
-        + multiply(qty: double): Money
-        + equals(obj: Object): boolean
-        + hashCode(): int
-        + compareTo(other: Money): int
-        + toString(): String
+        + add(Money): Money
+        + multiply(int): Money
+        + multiply(double): Money
     }
 }
 
@@ -30,10 +36,7 @@ package "com.cafepos.catalog" {
         - id: String
         - name: String
         - basePrice: Money
-        + SimpleProduct(id: String, name: String, basePrice: Money)
-        + id(): String
-        + name(): String
-        + basePrice(): Money
+        + SimpleProduct(String, String, Money)
     }
     
     interface Catalog {
@@ -43,8 +46,8 @@ package "com.cafepos.catalog" {
     
     class InMemoryCatalog {
         - byId: HashMap<String, Product>
-        + add(p: Product): void
-        + findById(id: String): Optional<Product>
+        + add(Product): void
+        + findById(String): Optional<Product>
     }
 }
 
@@ -53,17 +56,11 @@ package "com.cafepos.domain" {
         - id: long
         - items: ArrayList<LineItem>
         - observers: ArrayList<OrderObserver>
-        + Order(id: long)
-        + id(): long
-        + items(): List<LineItem>
-        + addItem(li: LineItem): void
+        + Order(long)
+        + addItem(LineItem): void
         + subtotal(): Money
-        + taxAtPercent(percent: int): Money
-        + totalWithTax(percent: int): Money
-        + pay(strategy: PaymentStrategy): void
-        + register(o: OrderObserver): void
-        + unregister(o: OrderObserver): void
-        + notifyObservers(order: Order, eventType: String): void
+        + pay(PaymentStrategy): void
+        + register(OrderObserver): void
         + markReady(): void
         + markItemAdded(): void
         + markPaid(): void
@@ -72,9 +69,7 @@ package "com.cafepos.domain" {
     class LineItem {
         - product: Product
         - quantity: int
-        + LineItem(product: Product, quantity: int)
-        + product(): Product
-        + quantity(): int
+        + LineItem(Product, int)
         + lineTotal(): Money
     }
     
@@ -85,24 +80,9 @@ package "com.cafepos.domain" {
 }
 
 package "com.cafepos.demo" {
-    'class Week2Demo {
-    '    + {static} main(args: String[]): void
-    '}
-    
-    'class Week3Demo {
-    '    + {static} main(args: String[]): void
-    '}
-    
-    'class Week4Demo {
-    '    + {static} main(args: String[]): void
-    '}
-    
-    'class Week5Demo {
-    '    + {static} main(args: String[]): void
-    '}
-    
     class Week6Demo {
         + {static} main(args: String[]): void
+        - {static} runInteractiveDemo(): void
     }
 }
 
@@ -112,6 +92,10 @@ package "com.cafepos.payment" {
     }
     
     class CashPayment {
+        - cashAmount: Money
+        + CashPayment()
+        + CashPayment(cashAmount: Money)
+        + getCashAmount(): Money
         + pay(order: Order): void
     }
     
@@ -159,36 +143,26 @@ package "com.cafepos.decorator" {
     
     abstract class ProductDecorator {
         # base: Product
-        + ProductDecorator(base: Product)
-        + id(): String
-        + basePrice(): Money
+        + ProductDecorator(Product)
     }
     
     class ExtraShot {
-        - {static} SURCHARGE: Money
-        + ExtraShot(base: Product)
-        + name(): String
+        + ExtraShot(Product)
         + price(): Money
     }
     
     class OatMilk {
-        - {static} SURCHARGE: Money
-        + OatMilk(base: Product)
-        + name(): String
+        + OatMilk(Product)
         + price(): Money
     }
     
     class SizeLarge {
-        - {static} SURCHARGE: Money
-        + SizeLarge(base: Product)
-        + name(): String
+        + SizeLarge(Product)
         + price(): Money
     }
     
     class Syrup {
-        - {static} SURCHARGE: Money
-        + Syrup(base: Product)
-        + name(): String
+        + Syrup(Product)
         + price(): Money
     }
 }
@@ -219,8 +193,8 @@ package "com.cafepos.pricing" {
     class PricingService {
         - discountPolicy: DiscountPolicy
         - taxPolicy: TaxPolicy
-        + PricingService(discountPolicy: DiscountPolicy, taxPolicy: TaxPolicy)
-        + price(subtotal: Money): PricingResult
+        + PricingService(DiscountPolicy, TaxPolicy)
+        + price(Money): PricingResult
     }
     
     class "PricingService.PricingResult" as PricingResult {
@@ -264,9 +238,8 @@ package "com.cafepos.checkout" {
         - factory: ProductFactory
         - pricing: PricingService
         - printer: ReceiptPrinter
-        - taxPercent: int
-        + CheckoutService(factory: ProductFactory, pricing: PricingService, printer: ReceiptPrinter, taxPercent: int)
-        + checkout(recipe: String, qty: int, paymentStrategy: PaymentStrategy): String
+        + CheckoutService(...)
+        + checkout(String, int, PaymentStrategy): String
     }
 }
 
@@ -301,35 +274,36 @@ WalletPayment ..|> PaymentStrategy
 KitchenDisplay ..|> OrderObserver
 DeliveryDesk ..|> OrderObserver
 CustomerNotifier ..|> OrderObserver
-'Week2Demo --> Catalog : uses
-'Week2Demo --> InMemoryCatalog : creates
-'Week2Demo --> SimpleProduct : creates
-'Week2Demo --> Order : creates
-'Week2Demo --> LineItem : creates
-'Week2Demo --> OrderIds : uses
-'Week3Demo --> Catalog : uses
-'Week3Demo --> InMemoryCatalog : creates
-'Week3Demo --> SimpleProduct : creates
-'Week3Demo --> Order : creates
-'Week3Demo --> LineItem : creates
-'Week3Demo --> OrderIds : uses
-'Week3Demo --> CashPayment : creates
-'Week3Demo --> CardPayment : creates
-'Week3Demo --> WalletPayment : creates
-'Week4Demo --> Catalog : uses
-'Week4Demo --> InMemoryCatalog : creates
-'Week4Demo --> SimpleProduct : creates
-'Week4Demo --> Order : creates
-'Week4Demo --> LineItem : creates
-'Week4Demo --> OrderIds : uses
-'Week4Demo --> KitchenDisplay : creates
-'Week4Demo --> DeliveryDesk : creates
-'Week4Demo --> CustomerNotifier : creates
-'Week4Demo --> CashPayment : creates
-'Week5Demo --> ProductFactory : uses
-'Week5Demo --> Order : creates
-'Week5Demo --> LineItem : creates
-'Week5Demo --> OrderIds : uses
+ProductDecorator ..|> Product
+ProductDecorator ..|> Priced
+ExtraShot --|> ProductDecorator
+OatMilk --|> ProductDecorator
+SizeLarge --|> ProductDecorator
+Syrup --|> ProductDecorator
+ProductFactory --> Product : creates
+ProductFactory --> ProductDecorator : creates
+DiscountPolicyFactory --> DiscountPolicy : creates
+PaymentStrategyFactory --> PaymentStrategy : creates
+LoyaltyPercentDiscount ..|> DiscountPolicy
+FixedCouponDiscount ..|> DiscountPolicy
+NoDiscount ..|> DiscountPolicy
+FixedRateTaxPolicy ..|> TaxPolicy
+PricingService --> DiscountPolicy : uses
+PricingService --> TaxPolicy : uses
+PricingService --> PricingResult : creates
+CheckoutService --> ProductFactory : uses
+CheckoutService --> PricingService : uses
+CheckoutService --> ReceiptPrinter : uses
+CheckoutService --> PaymentStrategy : uses
+OrderManagerGod --> ProductFactory : uses
+OrderManagerGod --> DiscountPolicy : uses
+OrderManagerGod --> TaxPolicy : uses
+OrderManagerGod --> ReceiptPrinter : uses
+OrderManagerGod --> PaymentStrategy : uses
+CashPayment --> Money : uses
+Week6Demo ..> CheckoutService : uses
+Week6Demo ..> ProductFactory : uses
+Week6Demo ..> Order : createsFactory : uses
 Week6Demo --> CheckoutService : uses
 Week6Demo --> PricingService : uses
 Week6Demo --> ProductFactory : uses
