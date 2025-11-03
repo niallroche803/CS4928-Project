@@ -1,5 +1,6 @@
 package com.cafepos.smells;
 
+import com.cafepos.checkout.ReceiptPrinter;
 import com.cafepos.common.Money;
 import com.cafepos.factory.*;
 import com.cafepos.catalog.Product;

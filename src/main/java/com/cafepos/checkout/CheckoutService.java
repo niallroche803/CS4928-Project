@@ -8,7 +8,7 @@ import com.cafepos.domain.OrderIds;
 import com.cafepos.factory.ProductFactory;
 import com.cafepos.payment.PaymentStrategy;
 import com.cafepos.pricing.PricingService;
-import com.cafepos.pricing.ReceiptPrinter;
+
 
 public final class CheckoutService {
     private final ProductFactory factory;

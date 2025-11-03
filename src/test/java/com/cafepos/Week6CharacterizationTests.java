@@ -1,5 +1,6 @@
 package com.cafepos;
 
+import com.cafepos.checkout.ReceiptPrinter;
 import com.cafepos.smells.OrderManagerGod;
 import com.cafepos.factory.*;
 import com.cafepos.pricing.*;
