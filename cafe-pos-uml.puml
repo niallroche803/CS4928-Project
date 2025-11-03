@@ -80,9 +80,12 @@ package "com.cafepos.domain" {
 }
 
 package "com.cafepos.demo" {
-    class Week6Demo {
+    class Week8CommandsDemo {
         + {static} main(args: String[]): void
-        - {static} runInteractiveDemo(): void
+    }
+    
+    class Week8AdapterDemo {
+        + {static} main(args: String[]): void
     }
 }
 
@@ -243,6 +246,68 @@ package "com.cafepos.checkout" {
     }
 }
 
+package "com.cafepos.command" {
+    interface Command {
+        + execute(): void
+        + undo(): void
+    }
+    
+    class AddItemCommand {
+        - service: OrderService
+        - recipe: String
+        - qty: int
+        + AddItemCommand(OrderService, String, int)
+        + execute(): void
+        + undo(): void
+    }
+    
+    class PayOrderCommand {
+        - service: OrderService
+        - strategy: PaymentStrategy
+        - taxPercent: int
+        + PayOrderCommand(OrderService, PaymentStrategy, int)
+        + execute(): void
+    }
+    
+    class PosRemote {
+        - slots: Command[]
+        - history: Deque<Command>
+        + PosRemote(int)
+        + setSlot(int, Command): void
+        + press(int): void
+        + undo(): void
+    }
+    
+    class OrderService {
+        - factory: ProductFactory
+        - order: Order
+        + OrderService(Order)
+        + addItem(String, int): void
+        + removeLastItem(): void
+        + totalWithTax(int): Money
+        + pay(PaymentStrategy, int): void
+        + order(): Order
+    }
+}
+
+package "com.cafepos.printing" {
+    interface Printer {
+        + printReceipt(String): void
+    }
+    
+    class LegacyPrinterAdapter {
+        - adaptee: LegacyThermalPrinter
+        + LegacyPrinterAdapter(LegacyThermalPrinter)
+        + printReceipt(String): void
+    }
+}
+
+package "vendor.legacy" {
+    class LegacyThermalPrinter {
+        + legacyPrint(byte[]): void
+    }
+}
+
 package "com.cafepos.smells" {
     class OrderManagerGod {
         - factory: ProductFactory
@@ -350,5 +415,31 @@ OrderManagerGod --> PaymentStrategy : uses
 OrderManagerGod --> Order : creates
 OrderManagerGod --> LineItem : creates
 OrderManagerGod --> PricingResult : creates
+
+' Command Pattern Relationships
+AddItemCommand ..|> Command
+PayOrderCommand ..|> Command
+PosRemote --> Command : stores
+OrderService --> Order : manages
+OrderService --> ProductFactory : uses
+OrderService --> PaymentStrategy : uses
+AddItemCommand --> OrderService : uses
+PayOrderCommand --> OrderService : uses
+PayOrderCommand --> PaymentStrategy : uses
+
+' Adapter Pattern Relationships
+LegacyPrinterAdapter ..|> Printer
+LegacyPrinterAdapter --> LegacyThermalPrinter : adapts
+
+' Demo Relationships
+Week8CommandsDemo --> Order : creates
+Week8CommandsDemo --> OrderService : uses
+Week8CommandsDemo --> PosRemote : uses
+Week8CommandsDemo --> AddItemCommand : creates
+Week8CommandsDemo --> PayOrderCommand : creates
+Week8CommandsDemo --> CardPayment : uses
+Week8AdapterDemo --> Printer : uses
+Week8AdapterDemo --> LegacyPrinterAdapter : creates
+Week8AdapterDemo --> LegacyThermalPrinter : creates
 
 @enduml
