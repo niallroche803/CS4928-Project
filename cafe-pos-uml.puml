@@ -1,8 +1,8 @@
-@startuml CafePOS Class Diagram
+@startuml Week9 UML
 skinparam pageMargin 10
-skinparam pageWidth 1400
-skinparam pageHeight 1000
-scale 0.8
+skinparam pageWidth 1200
+skinparam pageHeight 800
+scale 0.9
 left to right direction
 skinparam class {
     BackgroundColor White
@@ -14,6 +14,7 @@ skinparam package {
     BorderColor Black
 }
 hide empty members
+
 package "com.cafepos.common" {
     class Money {
         - amount: BigDecimal
@@ -25,421 +26,158 @@ package "com.cafepos.common" {
     }
 }
 
-package "com.cafepos.catalog" {
-    interface Product {
-        + id(): String
-        + name(): String
-        + basePrice(): Money
-    }
-    
-    class SimpleProduct {
-        - id: String
-        - name: String
-        - basePrice: Money
-        + SimpleProduct(String, String, Money)
-    }
-    
-    interface Catalog {
-        + add(p: Product): void
-        + findById(id: String): Optional<Product>
-    }
-    
-    class InMemoryCatalog {
-        - byId: HashMap<String, Product>
-        + add(Product): void
-        + findById(String): Optional<Product>
-    }
-}
-
-package "com.cafepos.domain" {
-    class Order {
-        - id: long
-        - items: ArrayList<LineItem>
-        - observers: ArrayList<OrderObserver>
-        + Order(long)
-        + addItem(LineItem): void
-        + subtotal(): Money
-        + pay(PaymentStrategy): void
-        + register(OrderObserver): void
-        + markReady(): void
-        + markItemAdded(): void
-        + markPaid(): void
-    }
-    
-    class LineItem {
-        - product: Product
-        - quantity: int
-        + LineItem(Product, int)
-        + lineTotal(): Money
-    }
-    
-    class OrderIds {
-        - {static} counter: long
-        + {static} next(): long
-    }
-}
-
 package "com.cafepos.demo" {
-    class Week8CommandsDemo {
+    class Week9MenuDemo {
         + {static} main(args: String[]): void
     }
     
-    class Week8AdapterDemo {
+    class Week9StateDemo {
         + {static} main(args: String[]): void
     }
 }
 
-package "com.cafepos.payment" {
-    interface PaymentStrategy {
-        + pay(order: Order): void
-    }
-    
-    class CashPayment {
-        - cashAmount: Money
-        + CashPayment()
-        + CashPayment(cashAmount: Money)
-        + getCashAmount(): Money
-        + pay(order: Order): void
-    }
-    
-    class CardPayment {
-        - cardNumber: String
-        + CardPayment(cardNumber: String)
-        + pay(order: Order): void
-    }
-    
-    class WalletPayment {
-        - walletId: String
-        + WalletPayment(walletId: String)
-        + pay(order: Order): void
-    }
-}
-
-package "com.cafepos.observers" {
-    interface OrderObserver {
-        + updated(order: Order, eventType: String): void
-    }
-    
-    interface OrderPublisher {
-        + register(o: OrderObserver): void
-        + unregister(o: OrderObserver): void
-        + notifyObservers(order: Order, eventType: String): void
-    }
-    
-    class KitchenDisplay {
-        + updated(order: Order, eventType: String): void
-    }
-    
-    class DeliveryDesk {
-        + updated(order: Order, eventType: String): void
-    }
-    
-    class CustomerNotifier {
-        + updated(order: Order, eventType: String): void
-    }
-}
-
-package "com.cafepos.decorator" {
-    interface Priced {
+package "com.cafepos.menu" {
+    abstract class MenuComponent {
+        + add(MenuComponent): void
+        + remove(MenuComponent): void
+        + getChild(int): MenuComponent
+        + name(): String
         + price(): Money
+        + vegetarian(): boolean
+        + iterator(): Iterator<MenuComponent>
+        + print(): void
     }
     
-    abstract class ProductDecorator {
-        # base: Product
-        + ProductDecorator(Product)
+    class Menu {
+        - name: String
+        - children: List<MenuComponent>
+        + Menu(String)
+        + add(MenuComponent): void
+        + remove(MenuComponent): void
+        + getChild(int): MenuComponent
+        + name(): String
+        + childrenIterator(): Iterator<MenuComponent>
+        + iterator(): Iterator<MenuComponent>
+        + print(): void
+        + allItems(): List<MenuComponent>
+        + vegetarianItems(): List<MenuItem>
     }
     
-    class ExtraShot {
-        + ExtraShot(Product)
+    class MenuItem {
+        - name: String
+        - price: Money
+        - vegetarian: boolean
+        + MenuItem(String, Money, boolean)
+        + name(): String
         + price(): Money
+        + vegetarian(): boolean
+        + iterator(): Iterator<MenuComponent>
+        + print(): void
     }
     
-    class OatMilk {
-        + OatMilk(Product)
-        + price(): Money
-    }
-    
-    class SizeLarge {
-        + SizeLarge(Product)
-        + price(): Money
-    }
-    
-    class Syrup {
-        + Syrup(Product)
-        + price(): Money
+    class CompositeIterator {
+        - stack: Deque<Iterator<MenuComponent>>
+        + CompositeIterator(Iterator<MenuComponent>)
+        + hasNext(): boolean
+        + next(): MenuComponent
     }
 }
 
-package "com.cafepos.factory" {
-    class ProductFactory {
-        + create(recipe: String): Product
+package "com.cafepos.state" {
+    interface State {
+        + pay(OrderFSM): void
+        + prepare(OrderFSM): void
+        + markReady(OrderFSM): void
+        + deliver(OrderFSM): void
+        + cancel(OrderFSM): void
+        + name(): String
     }
     
-    class DiscountPolicyFactory {
-        + create(type: String): DiscountPolicy
+    class OrderFSM {
+        - state: State
+        + OrderFSM()
+        + set(State): void
+        + status(): String
+        + pay(): void
+        + prepare(): void
+        + markReady(): void
+        + deliver(): void
+        + cancel(): void
     }
     
-    class PaymentStrategyFactory {
-        + create(type: String): PaymentStrategy
+    class NewState {
+        + pay(OrderFSM): void
+        + prepare(OrderFSM): void
+        + markReady(OrderFSM): void
+        + deliver(OrderFSM): void
+        + cancel(OrderFSM): void
+        + name(): String
+    }
+    
+    class PreparingState {
+        + pay(OrderFSM): void
+        + prepare(OrderFSM): void
+        + markReady(OrderFSM): void
+        + deliver(OrderFSM): void
+        + cancel(OrderFSM): void
+        + name(): String
+    }
+    
+    class ReadyState {
+        + pay(OrderFSM): void
+        + prepare(OrderFSM): void
+        + markReady(OrderFSM): void
+        + deliver(OrderFSM): void
+        + cancel(OrderFSM): void
+        + name(): String
+    }
+    
+    class DeliveredState {
+        + pay(OrderFSM): void
+        + prepare(OrderFSM): void
+        + markReady(OrderFSM): void
+        + deliver(OrderFSM): void
+        + cancel(OrderFSM): void
+        + name(): String
+    }
+    
+    class CancelledState {
+        + pay(OrderFSM): void
+        + prepare(OrderFSM): void
+        + markReady(OrderFSM): void
+        + deliver(OrderFSM): void
+        + cancel(OrderFSM): void
+        + name(): String
     }
 }
 
-package "com.cafepos.pricing" {
-    interface DiscountPolicy {
-        + discountOf(subtotal: Money): Money
-    }
-    
-    interface TaxPolicy {
-        + taxOn(amount: Money): Money
-    }
-    
-    class PricingService {
-        - discountPolicy: DiscountPolicy
-        - taxPolicy: TaxPolicy
-        + PricingService(DiscountPolicy, TaxPolicy)
-        + price(Money): PricingResult
-    }
-    
-    class "PricingService.PricingResult" as PricingResult {
-        + subtotal: Money
-        + discount: Money
-        + tax: Money
-        + total: Money
-    }
-    
-    class LoyaltyPercentDiscount {
-        - percent: int
-        + LoyaltyPercentDiscount(percent: int)
-        + discountOf(subtotal: Money): Money
-    }
-    
-    class FixedCouponDiscount {
-        - amount: Money
-        + FixedCouponDiscount(amount: Money)
-        + discountOf(subtotal: Money): Money
-    }
-    
-    class NoDiscount {
-        + discountOf(subtotal: Money): Money
-    }
-    
-    class FixedRateTaxPolicy {
-        - percent: int
-        + FixedRateTaxPolicy(percent: int)
-        + taxOn(amount: Money): Money
-        + getPercent(): int
-    }
-    
-    class ReceiptPrinter {
-        + format(recipe: String, qty: int, pr: PricingResult, taxPercent: int): String
-        + print(receipt: String): void
-    }
-}
 
-package "com.cafepos.checkout" {
-    class CheckoutService {
-        - factory: ProductFactory
-        - pricing: PricingService
-        - printer: ReceiptPrinter
-        + CheckoutService(...)
-        + checkout(String, int, PaymentStrategy): String
-    }
-}
 
-package "com.cafepos.command" {
-    interface Command {
-        + execute(): void
-        + undo(): void
-    }
-    
-    class AddItemCommand {
-        - service: OrderService
-        - recipe: String
-        - qty: int
-        + AddItemCommand(OrderService, String, int)
-        + execute(): void
-        + undo(): void
-    }
-    
-    class PayOrderCommand {
-        - service: OrderService
-        - strategy: PaymentStrategy
-        - taxPercent: int
-        + PayOrderCommand(OrderService, PaymentStrategy, int)
-        + execute(): void
-    }
-    
-    class PosRemote {
-        - slots: Command[]
-        - history: Deque<Command>
-        + PosRemote(int)
-        + setSlot(int, Command): void
-        + press(int): void
-        + undo(): void
-    }
-    
-    class OrderService {
-        - factory: ProductFactory
-        - order: Order
-        + OrderService(Order)
-        + addItem(String, int): void
-        + removeLastItem(): void
-        + totalWithTax(int): Money
-        + pay(PaymentStrategy, int): void
-        + order(): Order
-    }
-}
+' Composite Pattern Relationships
+Menu --|> MenuComponent
+MenuItem --|> MenuComponent
+Menu *-- MenuComponent : contains
+Menu --> CompositeIterator : creates
+CompositeIterator --> MenuComponent : iterates
+MenuItem --> Money : has price
 
-package "com.cafepos.printing" {
-    interface Printer {
-        + printReceipt(String): void
-    }
-    
-    class LegacyPrinterAdapter {
-        - adaptee: LegacyThermalPrinter
-        + LegacyPrinterAdapter(LegacyThermalPrinter)
-        + printReceipt(String): void
-    }
-}
+' State Pattern Relationships
+OrderFSM --> State : current
+NewState ..|> State
+PreparingState ..|> State
+ReadyState ..|> State
+DeliveredState ..|> State
+CancelledState ..|> State
+NewState --> PreparingState : transitions to
+PreparingState --> ReadyState : transitions to
+ReadyState --> DeliveredState : transitions to
+NewState --> CancelledState : transitions to
+PreparingState --> CancelledState : transitions to
 
-package "vendor.legacy" {
-    class LegacyThermalPrinter {
-        + legacyPrint(byte[]): void
-    }
-}
-
-package "com.cafepos.smells" {
-    class OrderManagerGod {
-        - factory: ProductFactory
-        - discountPolicy: DiscountPolicy
-        - taxPolicy: TaxPolicy
-        - printer: ReceiptPrinter
-        - paymentStrategy: PaymentStrategy
-        + OrderManagerGod(factory: ProductFactory, discountPolicy: DiscountPolicy, taxPolicy: TaxPolicy, printer: ReceiptPrinter, paymentStrategy: PaymentStrategy)
-        + process(recipe: String, qty: int, paymentType: String, paymentDetails: String, discountCode: String, printReceipt: boolean): String
-    }
-}
-
-' Relationships
-SimpleProduct ..|> Product
-InMemoryCatalog ..|> Catalog
-InMemoryCatalog --> Product : stores
-Order *-- LineItem : contains
-LineItem --> Product : references
-LineItem --> Money : calculates
-Order --> Money : calculates
-SimpleProduct --> Money : has basePrice
-Money ..|> Comparable
-Order --> PaymentStrategy : uses
-Order ..|> OrderPublisher
-Order --> OrderObserver : notifies
-CashPayment ..|> PaymentStrategy
-CardPayment ..|> PaymentStrategy
-WalletPayment ..|> PaymentStrategy
-KitchenDisplay ..|> OrderObserver
-DeliveryDesk ..|> OrderObserver
-CustomerNotifier ..|> OrderObserver
-ProductDecorator ..|> Product
-ProductDecorator ..|> Priced
-ExtraShot --|> ProductDecorator
-OatMilk --|> ProductDecorator
-SizeLarge --|> ProductDecorator
-Syrup --|> ProductDecorator
-ProductFactory --> Product : creates
-ProductFactory --> ProductDecorator : creates
-DiscountPolicyFactory --> DiscountPolicy : creates
-PaymentStrategyFactory --> PaymentStrategy : creates
-LoyaltyPercentDiscount ..|> DiscountPolicy
-FixedCouponDiscount ..|> DiscountPolicy
-NoDiscount ..|> DiscountPolicy
-FixedRateTaxPolicy ..|> TaxPolicy
-PricingService --> DiscountPolicy : uses
-PricingService --> TaxPolicy : uses
-PricingService --> PricingResult : creates
-CheckoutService --> ProductFactory : uses
-CheckoutService --> PricingService : uses
-CheckoutService --> ReceiptPrinter : uses
-CheckoutService --> PaymentStrategy : uses
-OrderManagerGod --> ProductFactory : uses
-OrderManagerGod --> DiscountPolicy : uses
-OrderManagerGod --> TaxPolicy : uses
-OrderManagerGod --> ReceiptPrinter : uses
-OrderManagerGod --> PaymentStrategy : uses
-CashPayment --> Money : uses
-Week6Demo ..> CheckoutService : uses
-Week6Demo ..> ProductFactory : uses
-Week6Demo ..> Order : createsFactory : uses
-Week6Demo --> CheckoutService : uses
-Week6Demo --> PricingService : uses
-Week6Demo --> ProductFactory : uses
-Week6Demo --> OrderManagerGod : uses
-Week6Demo --> PaymentStrategy : uses
-ProductDecorator ..|> Product
-ProductDecorator ..|> Priced
-ProductDecorator --> Product : decorates
-ExtraShot --|> ProductDecorator
-OatMilk --|> ProductDecorator
-SizeLarge --|> ProductDecorator
-Syrup --|> ProductDecorator
-ExtraShot --> Money : uses
-OatMilk --> Money : uses
-SizeLarge --> Money : uses
-Syrup --> Money : uses
-ProductFactory --> Product : creates
-ProductFactory --> SimpleProduct : creates
-ProductFactory --> ExtraShot : creates
-ProductFactory --> OatMilk : creates
-ProductFactory --> SizeLarge : creates
-ProductFactory --> Syrup : creates
-DiscountPolicyFactory --> DiscountPolicy : creates
-PaymentStrategyFactory --> PaymentStrategy : creates
-PricingService --> DiscountPolicy : uses
-PricingService --> TaxPolicy : uses
-PricingService --> PricingResult : creates
-LoyaltyPercentDiscount ..|> DiscountPolicy
-FixedCouponDiscount ..|> DiscountPolicy
-NoDiscount ..|> DiscountPolicy
-FixedRateTaxPolicy ..|> TaxPolicy
-ReceiptPrinter --> PricingResult : uses
-CheckoutService --> ProductFactory : uses
-CheckoutService --> PricingService : uses
-CheckoutService --> ReceiptPrinter : uses
-CheckoutService --> PaymentStrategy : uses
-CheckoutService --> Order : creates
-CheckoutService --> LineItem : creates
-OrderManagerGod --> ProductFactory : uses
-OrderManagerGod --> DiscountPolicy : uses
-OrderManagerGod --> TaxPolicy : uses
-OrderManagerGod --> ReceiptPrinter : uses
-OrderManagerGod --> PaymentStrategy : uses
-OrderManagerGod --> Order : creates
-OrderManagerGod --> LineItem : creates
-OrderManagerGod --> PricingResult : creates
-
-' Command Pattern Relationships
-AddItemCommand ..|> Command
-PayOrderCommand ..|> Command
-PosRemote --> Command : stores
-OrderService --> Order : manages
-OrderService --> ProductFactory : uses
-OrderService --> PaymentStrategy : uses
-AddItemCommand --> OrderService : uses
-PayOrderCommand --> OrderService : uses
-PayOrderCommand --> PaymentStrategy : uses
-
-' Adapter Pattern Relationships
-LegacyPrinterAdapter ..|> Printer
-LegacyPrinterAdapter --> LegacyThermalPrinter : adapts
-
-' Demo Relationships
-Week8CommandsDemo --> Order : creates
-Week8CommandsDemo --> OrderService : uses
-Week8CommandsDemo --> PosRemote : uses
-Week8CommandsDemo --> AddItemCommand : creates
-Week8CommandsDemo --> PayOrderCommand : creates
-Week8CommandsDemo --> CardPayment : uses
-Week8AdapterDemo --> Printer : uses
-Week8AdapterDemo --> LegacyPrinterAdapter : creates
-Week8AdapterDemo --> LegacyThermalPrinter : creates
+' Demo Dependencies
+Week9MenuDemo --> Menu : uses
+Week9MenuDemo --> MenuItem : uses
+Week9MenuDemo --> Money : uses
+Week9StateDemo --> OrderFSM : uses
 
 @enduml
