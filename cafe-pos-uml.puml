@@ -1,183 +1,64 @@
-@startuml Week9 UML
-skinparam pageMargin 10
-skinparam pageWidth 1200
-skinparam pageHeight 800
-scale 0.9
-left to right direction
-skinparam class {
-    BackgroundColor White
-    BorderColor Black
-    ArrowColor Black
-}
-skinparam package {
-    BackgroundColor LightGray
-    BorderColor Black
-}
-hide empty members
-
-package "com.cafepos.common" {
-    class Money {
-        - amount: BigDecimal
-        + {static} of(double): Money
-        + {static} zero(): Money
-        + add(Money): Money
-        + multiply(int): Money
-        + multiply(double): Money
-    }
-}
+@startuml Demo Classes UML
+!theme plain
 
 package "com.cafepos.demo" {
-    class Week9MenuDemo {
-        + {static} main(args: String[]): void
-    }
-    
-    class Week9StateDemo {
+    class Week10MvcDemo {
         + {static} main(args: String[]): void
     }
 }
 
-package "com.cafepos.menu" {
-    abstract class MenuComponent {
-        + add(MenuComponent): void
-        + remove(MenuComponent): void
-        + getChild(int): MenuComponent
-        + name(): String
-        + price(): Money
-        + vegetarian(): boolean
-        + iterator(): Iterator<MenuComponent>
-        + print(): void
+package "com.cafepos.ui" {
+    class EventWiringDemo {
+        + {static} main(args: String[]): void
     }
     
-    class Menu {
-        - name: String
-        - children: List<MenuComponent>
-        + Menu(String)
-        + add(MenuComponent): void
-        + remove(MenuComponent): void
-        + getChild(int): MenuComponent
-        + name(): String
-        + childrenIterator(): Iterator<MenuComponent>
-        + iterator(): Iterator<MenuComponent>
-        + print(): void
-        + allItems(): List<MenuComponent>
-        + vegetarianItems(): List<MenuItem>
+    class OrderController {
+        + createOrder(id: long): void
+        + addItem(id: long, item: String, quantity: int): void
+        + checkout(id: long, payment: int): String
     }
     
-    class MenuItem {
-        - name: String
-        - price: Money
-        - vegetarian: boolean
-        + MenuItem(String, Money, boolean)
-        + name(): String
-        + price(): Money
-        + vegetarian(): boolean
-        + iterator(): Iterator<MenuComponent>
-        + print(): void
-    }
-    
-    class CompositeIterator {
-        - stack: Deque<Iterator<MenuComponent>>
-        + CompositeIterator(Iterator<MenuComponent>)
-        + hasNext(): boolean
-        + next(): MenuComponent
+    class ConsoleView {
+        + print(receipt: String): void
     }
 }
 
-package "com.cafepos.state" {
-    interface State {
-        + pay(OrderFSM): void
-        + prepare(OrderFSM): void
-        + markReady(OrderFSM): void
-        + deliver(OrderFSM): void
-        + cancel(OrderFSM): void
-        + name(): String
+package "com.cafepos.app.events" {
+    class EventBus {
+        + on(eventType: Class<T>, handler: Consumer<T>): void
+        + emit(event: Object): void
     }
     
-    class OrderFSM {
-        - state: State
-        + OrderFSM()
-        + set(State): void
-        + status(): String
-        + pay(): void
-        + prepare(): void
-        + markReady(): void
-        + deliver(): void
-        + cancel(): void
+    class OrderCreated {
+        + orderId(): long
     }
     
-    class NewState {
-        + pay(OrderFSM): void
-        + prepare(OrderFSM): void
-        + markReady(OrderFSM): void
-        + deliver(OrderFSM): void
-        + cancel(OrderFSM): void
-        + name(): String
-    }
-    
-    class PreparingState {
-        + pay(OrderFSM): void
-        + prepare(OrderFSM): void
-        + markReady(OrderFSM): void
-        + deliver(OrderFSM): void
-        + cancel(OrderFSM): void
-        + name(): String
-    }
-    
-    class ReadyState {
-        + pay(OrderFSM): void
-        + prepare(OrderFSM): void
-        + markReady(OrderFSM): void
-        + deliver(OrderFSM): void
-        + cancel(OrderFSM): void
-        + name(): String
-    }
-    
-    class DeliveredState {
-        + pay(OrderFSM): void
-        + prepare(OrderFSM): void
-        + markReady(OrderFSM): void
-        + deliver(OrderFSM): void
-        + cancel(OrderFSM): void
-        + name(): String
-    }
-    
-    class CancelledState {
-        + pay(OrderFSM): void
-        + prepare(OrderFSM): void
-        + markReady(OrderFSM): void
-        + deliver(OrderFSM): void
-        + cancel(OrderFSM): void
-        + name(): String
+    class OrderPaid {
+        + orderId(): long
     }
 }
 
+package "com.cafepos.infra" {
+    class Wiring {
+        + {static} createDefault(): Components
+    }
+    
+    class Components {
+        + repo(): OrderRepository
+        + checkout(): CheckoutService
+    }
+}
 
+Week10MvcDemo --> OrderController : creates
+Week10MvcDemo --> ConsoleView : creates
+Week10MvcDemo --> Wiring : calls createDefault()
+Week10MvcDemo --> Components : uses
 
-' Composite Pattern Relationships
-Menu --|> MenuComponent
-MenuItem --|> MenuComponent
-Menu *-- MenuComponent : contains
-Menu --> CompositeIterator : creates
-CompositeIterator --> MenuComponent : iterates
-MenuItem --> Money : has price
-
-' State Pattern Relationships
-OrderFSM --> State : current
-NewState ..|> State
-PreparingState ..|> State
-ReadyState ..|> State
-DeliveredState ..|> State
-CancelledState ..|> State
-NewState --> PreparingState : transitions to
-PreparingState --> ReadyState : transitions to
-ReadyState --> DeliveredState : transitions to
-NewState --> CancelledState : transitions to
-PreparingState --> CancelledState : transitions to
-
-' Demo Dependencies
-Week9MenuDemo --> Menu : uses
-Week9MenuDemo --> MenuItem : uses
-Week9MenuDemo --> Money : uses
-Week9StateDemo --> OrderFSM : uses
+EventWiringDemo --> EventBus : creates
+EventWiringDemo --> OrderController : creates
+EventWiringDemo --> Wiring : calls createDefault()
+EventWiringDemo --> Components : uses
+EventWiringDemo --> OrderCreated : creates/emits
+EventWiringDemo --> OrderPaid : creates/emits
 
 @enduml
