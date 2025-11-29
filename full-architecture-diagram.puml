@@ -1,0 +1,178 @@
+@startuml Cafe POS - Four Layer Architecture
+!theme plain
+skinparam pageMargin 5
+skinparam pageWidth 1200
+skinparam pageHeight 800
+scale 0.7
+left to right direction
+hide empty members
+
+skinparam package {
+    BorderColor Black
+    FontStyle bold
+}
+
+skinparam class {
+    BorderColor Black
+    ArrowColor Black
+}
+
+skinparam interface {
+    BorderColor Black
+}
+
+' ===== UI LAYER =====
+package "UI Layer" as UILayer #LightCyan {
+    class OrderController
+    class ConsoleView
+}
+
+' ===== APPLICATION LAYER =====
+together {
+' ===== APPLICATION LAYER =====
+package "Application Layer" as ApplicationLayer #LightGreen {
+    class CheckoutService
+    class ReceiptFormatter
+    class EventBus
+    interface OrderEvent
+    class OrderCreated
+    class OrderPaid
+    interface Command
+    class AddItemCommand
+    class PayOrderCommand
+    class MacroCommand
+    class OrderService
+    class PosRemote
+    class PricingService
+    interface DiscountPolicy
+    interface TaxPolicy
+    class LoyaltyPercentDiscount
+    class FixedCouponDiscount
+    class NoDiscount
+    class FixedRateTaxPolicy
+    interface PaymentStrategy
+    class CardPayment
+    class CashPayment
+    class WalletPayment
+    interface Priced
+    abstract class ProductDecorator
+    class ExtraShot
+    class OatMilk
+    class SizeLarge
+    class Syrup
+    interface State
+    class OrderFSM
+    class NewState
+    class PreparingState
+    class ReadyState
+    class DeliveredState
+    class CancelledState
+    abstract class MenuComponent
+    class Menu
+    class MenuItem
+    class CompositeIterator
+    interface OrderObserver
+    interface OrderPublisher
+    class CustomerNotifier
+    class DeliveryDesk
+    class KitchenDisplay
+    class ProductFactory
+    class PaymentStrategyFactory
+    class DiscountPolicyFactory
+}
+
+' ===== DOMAIN LAYER =====
+package "Domain Layer" as DomainLayer #LightYellow {
+    class Order
+    class LineItem
+    class OrderIds
+    interface OrderRepository
+    interface Catalog
+    interface Product
+    class SimpleProduct
+    class Money
+}
+}
+
+' ===== INFRASTRUCTURE LAYER (ADAPTERS) =====
+package "Infrastructure Layer (Adapters)" as InfrastructureLayer #LightPink {
+    class InMemoryOrderRepository
+    class InMemoryCatalog
+    class Wiring
+    class Components
+    class ReceiptPrinter
+    interface Printer
+    class LegacyPrinterAdapter
+    class LegacyThermalPrinter
+}
+
+' ===== LAYER DEPENDENCIES =====
+UILayer --> ApplicationLayer : depends on
+ApplicationLayer --> DomainLayer : depends on
+InfrastructureLayer --> DomainLayer : implements
+InfrastructureLayer --> ApplicationLayer : adapts
+
+' ===== KEY RELATIONSHIPS =====
+OrderController --> CheckoutService
+OrderController --> OrderService
+ConsoleView --> ReceiptFormatter
+CheckoutService -[#purple]-> OrderRepository
+CheckoutService --> PricingService
+OrderService -[#orange]-> OrderRepository
+OrderService -[#blue]-> Catalog
+PosRemote --> Command
+AddItemCommand -[#cyan]-> Order
+AddItemCommand -[#red]-> Catalog
+PayOrderCommand -[#magenta]-> Order
+Order --> LineItem
+Order --> PaymentStrategy
+LineItem --> Product
+PricingService --> DiscountPolicy
+PricingService --> TaxPolicy
+OrderFSM --> State
+ProductDecorator --> Product
+Menu --> MenuComponent
+MenuItem --> MenuComponent
+ProductFactory --> SimpleProduct
+PaymentStrategyFactory --> PaymentStrategy
+DiscountPolicyFactory --> DiscountPolicy
+Wiring --> InMemoryOrderRepository
+Wiring --> CheckoutService
+ReceiptPrinter --> Printer
+InMemoryOrderRepository .[#brown].|> OrderRepository
+InMemoryCatalog .[#green].|> Catalog
+SimpleProduct ..|> Product
+ProductDecorator ..|> Priced
+Menu --|> MenuComponent
+MenuItem --|> MenuComponent
+Order ..|> OrderPublisher
+CustomerNotifier ..|> OrderObserver
+DeliveryDesk ..|> OrderObserver
+KitchenDisplay ..|> OrderObserver
+CardPayment ..|> PaymentStrategy
+CashPayment ..|> PaymentStrategy
+WalletPayment ..|> PaymentStrategy
+ExtraShot --|> ProductDecorator
+OatMilk --|> ProductDecorator
+SizeLarge --|> ProductDecorator
+Syrup --|> ProductDecorator
+LoyaltyPercentDiscount ..|> DiscountPolicy
+FixedCouponDiscount ..|> DiscountPolicy
+NoDiscount ..|> DiscountPolicy
+FixedRateTaxPolicy ..|> TaxPolicy
+NewState ..|> State
+PreparingState ..|> State
+ReadyState ..|> State
+DeliveredState ..|> State
+CancelledState ..|> State
+AddItemCommand ..|> Command
+PayOrderCommand ..|> Command
+MacroCommand ..|> Command
+LegacyPrinterAdapter ..|> Printer
+LegacyPrinterAdapter --> LegacyThermalPrinter
+OrderCreated ..|> OrderEvent
+OrderPaid ..|> OrderEvent
+
+
+
+@enduml
